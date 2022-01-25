@@ -1,0 +1,76 @@
+- name: Create an instance
+  hosts: localhost
+  gather_facts: no
+  vars:
+      gcp_project: openshift-demo-320707
+      gcp_cred_kind: serviceaccount
+      gcp_cred_file: "/Users/champillon/SandBox/ansible-playground/gcp-key/openshift-demo-320707-46b48f11b55a.json"
+      zone: "us-central1-a"
+      region: "us-central1"
+      image: "projects/windows-cloud/global/images/windows-server-2016-dc-v20220119"
+
+  tasks:
+    - name: create a disk
+      gcp_compute_disk:
+         name: 'windows-disk'
+         size_gb: 50
+         source_image: "{{ image }}"
+         zone: "{{ zone }}"
+         project: "{{ gcp_project }}"
+         auth_kind: "{{ gcp_cred_kind }}"
+         service_account_file: "{{ gcp_cred_file }}"
+         scopes:
+           - https://www.googleapis.com/auth/compute
+         state: present
+      register: disk
+    - name: create a address
+      gcp_compute_address:
+         name: 'windows-address'
+         region: "{{ region }}"
+         project: "{{ gcp_project }}"
+         auth_kind: "{{ gcp_cred_kind }}"
+         service_account_file: "{{ gcp_cred_file }}"
+         scopes:
+           - https://www.googleapis.com/auth/compute
+         state: present
+      register: address
+    - name: create a firewall
+      gcp_compute_firewall:
+        name: 'windows-firewall'
+        allowed:
+          - ip_protocol: 'tcp'
+            ports:
+              - "5986"
+        target_tags:
+          - ansible-5986
+        project: "{{ gcp_project }}"
+        auth_kind: "{{ gcp_cred_kind }}"
+        service_account_file: "{{ gcp_cred_file }}"
+        scopes:
+           - https://www.googleapis.com/auth/compute
+        state: present
+    - name: create a instance
+      gcp_compute_instance:
+        state: present
+        name: windows-vm
+        machine_type: n1-standard-1
+        disks:
+          - auto_delete: true
+            boot: true
+            source: "{{ disk }}"
+        network_interfaces:
+          - network: null # use default s/.\Jl#W+=hV5*%
+            access_configs:
+              - name: 'External NAT'
+                nat_ip: "{{ address }}"
+                type: 'ONE_TO_ONE_NAT'
+        zone: "{{ zone }}"
+        project: "{{ gcp_project }}"
+        auth_kind: "{{ gcp_cred_kind }}"
+        service_account_file: "{{ gcp_cred_file }}"
+        scopes:
+          - https://www.googleapis.com/auth/compute
+        tags:
+          items:
+            - ansible-5986
+      register: instance

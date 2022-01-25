@@ -1,0 +1,9 @@
+[win]
+34.132.196.97
+
+[win:vars]
+ansible_user="passapong_t"
+ansible_password="s/.\Jl#W+=hV5*%"
+ansible_connection=winrm
+ansible_winrm_server_cert_validation=ignore
+ansible_port=5986

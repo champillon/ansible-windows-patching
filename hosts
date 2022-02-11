@@ -3,7 +3,7 @@
 
 [win:vars]
 ansible_user="passapong_t"
-ansible_password="s/.\Jl#W+=hV5*%"
+ansible_password="j,.5B}5\Fa87mJu"
 ansible_connection=winrm
 ansible_winrm_server_cert_validation=ignore
 ansible_port=5986
